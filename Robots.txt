@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://aegis-id-ultra.vercel.app/sitemap.xml
