@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#050914" />
+  <title>AEGIS ID™ Ultra Hardware Platform</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#050914; --panel:#091120; --line:#1a2940; --cyan:#22d3ee; }
+    body{font-family:Inter,sans-serif;background:var(--bg);color:#e5edf8}
+    .display{font-family:'Space Grotesk',sans-serif}
+    .grid-bg{background-image:linear-gradient(rgba(34,211,238,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.055) 1px,transparent 1px);background-size:42px 42px}
+    .glass{background:rgba(8,16,30,.72);backdrop-filter:blur(18px);border:1px solid rgba(148,163,184,.14)}
+    .glow{box-shadow:0 0 80px rgba(34,211,238,.12)}
+    .device{background:linear-gradient(145deg,#17243a,#050a13 55%,#132035);border:1px solid #3a4b66;box-shadow:0 40px 100px rgba(0,0,0,.55),0 0 80px rgba(34,211,238,.08)}
+    .screen{background:radial-gradient(circle at 75% 20%,rgba(34,211,238,.18),transparent 28%),linear-gradient(145deg,#08101c,#02050a)}
+    .fade{animation:fade .55s ease both}@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+    .modal{display:none}.modal.open{display:flex}
+    .toast{transform:translateY(120px);opacity:0;transition:.25s}.toast.show{transform:none;opacity:1}
+    .status-dot{animation:pulse 1.7s infinite}@keyframes pulse{50%{opacity:.35}}
+    .field{display:block;width:100%;margin-top:7px;border:1px solid #26364f;background:#060d18;border-radius:12px;padding:12px;color:#e5edf8;outline:none}.field:focus{border-color:#22d3ee;box-shadow:0 0 0 3px rgba(34,211,238,.08)}textarea.field{resize:vertical}
+    /* Tab navigation */
+    .tab-btn { transition: all 0.2s ease; cursor: pointer; }
+    .tab-btn.active { color: #22d3ee; border-bottom-color: #22d3ee; }
+    .tab-btn:hover:not(.active) { color: #e5edf8; border-bottom-color: #334155; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; animation: fade 0.4s ease both; }
+  </style>
+</head>
+<body class="antialiased selection:bg-cyan-400 selection:text-slate-950">
+  <div class="fixed inset-0 grid-bg pointer-events-none opacity-50"></div>
+
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-[#050914]/85 backdrop-blur-xl">
+    <div class="max-w-7xl mx-auto px-5 h-16 flex items-center justify-between">
+      <a href="#top" class="flex items-center">
+        <span class="display text-xl font-bold tracking-tight text-white">AEGIS <span class="text-cyan-400">ID</span> <span class="text-slate-500 text-sm font-normal">ULTRA</span></span>
+      </a>
+      <nav class="hidden md:flex gap-7 text-sm text-slate-400">
+        <a href="#features" class="hover:text-white">Features</a>
+        <a href="#specs" class="hover:text-white">Specs</a>
+        <a href="#security" class="hover:text-white">Security</a>
+        <a href="#status" class="hover:text-white">Track</a>
+        <a href="#admin" class="hover:text-cyan-300 font-semibold">Admin Dashboard</a>
+      </nav>
+      <div class="flex items-center gap-2">
+        <a href="#admin" class="hidden sm:inline-flex rounded-xl border border-slate-700 px-3 py-2 text-xs font-bold hover:border-cyan-400 hover:text-cyan-300">Admin</a>
+        <button onclick="openModal('eval-modal')" class="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300 transition">Request evaluation</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top" class="relative z-10">
+    <!-- ========== TAB NAVIGATION ========== -->
+    <div class="max-w-7xl mx-auto px-5 pt-8">
+      <div class="flex gap-6 border-b border-slate-800 text-sm font-medium overflow-x-auto">
+        <button class="tab-btn active pb-3 border-b-2 border-transparent whitespace-nowrap" data-tab="tab-home">Home</button>
+        <button class="tab-btn pb-3 border-b-2 border-transparent whitespace-nowrap" data-tab="tab-features">Features</button>
+        <button class="tab-btn pb-3 border-b-2 border-transparent whitespace-nowrap" data-tab="tab-specs">Specs</button>
+        <button class="tab-btn pb-3 border-b-2 border-transparent whitespace-nowrap" data-tab="tab-security">Security</button>
+        <button class="tab-btn pb-3 border-b-2 border-transparent whitespace-nowrap" data-tab="tab-track">Track</button>
+        <button class="tab-btn pb-3 border-b-2 border-transparent whitespace-nowrap" data-tab="tab-admin">Admin</button>
+      </div>
+    </div>
+
+    <!-- ========== TAB PANES ========== -->
+    <!-- HOME TAB -->
+    <div id="tab-home" class="tab-pane active">
+      <section class="max-w-7xl mx-auto px-5 pt-12 pb-24 grid lg:grid-cols-2 gap-16 items-center">
+        <div class="fade">
+          <div class="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1.5 text-xs font-semibold text-cyan-300"><span class="status-dot h-2 w-2 rounded-full bg-cyan-300"></span> NEXT-GENERATION CREDENTIAL DEVICE</div>
+          <h1 class="display mt-6 text-5xl md:text-7xl font-bold leading-[.98] tracking-tight">Your identity.<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-300 to-blue-500">One secure badge.</span></h1>
+          <p class="mt-7 max-w-xl text-lg leading-8 text-slate-400">AEGIS ID™ Ultra Hardware Platform is a concept for a connected identity credential combining biometric authentication, secure NFC, wireless connectivity, USB-C charging and a physical credential vault in one rugged device.</p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <button onclick="openModal('eval-modal')" class="rounded-xl bg-white px-5 py-3 font-bold text-slate-950 hover:bg-cyan-100">Request evaluation unit</button>
+            <button onclick="switchTab('tab-specs')" class="rounded-xl border border-slate-700 px-5 py-3 font-bold hover:border-slate-500">View specifications</button>
+          </div>
+          <div class="mt-8 grid grid-cols-3 gap-5 max-w-lg text-sm">
+            <div><b class="text-white">USB-C</b><p class="text-slate-500">Direct charge</p></div>
+            <div><b class="text-white">Qi2</b><p class="text-slate-500">Wireless charge</p></div>
+            <div><b class="text-white">IP68*</b><p class="text-slate-500">Rugged concept</p></div>
+          </div>
+        </div>
+        <div class="relative flex justify-center fade">
+          <div class="absolute inset-10 rounded-full bg-cyan-400/10 blur-3xl"></div>
+          <div class="device relative w-[330px] h-[520px] rounded-[38px] p-3 rotate-2">
+            <div class="screen h-full rounded-[29px] overflow-hidden border border-slate-700/80 p-5 flex flex-col justify-between">
+              <div class="flex justify-between text-[10px] text-slate-500"><span>AEGIS ID ULTRA</span><span>09:41</span></div>
+              <div><div class="mx-auto mb-7 h-28 w-28 rounded-full border border-cyan-300/50 flex items-center justify-center bg-cyan-400/5"><div class="h-20 w-20 rounded-full border border-cyan-300/30 flex items-center justify-center text-3xl">◉</div></div><p class="text-center text-xs uppercase tracking-[.3em] text-cyan-300">Identity verified</p><p class="mt-2 text-center text-2xl font-bold">Jilay</p></div>
+              <div class="grid grid-cols-3 gap-2 text-[10px] text-center"><div class="rounded-xl border border-slate-700 bg-slate-900/70 p-3">NFC<br><span class="text-emerald-300">READY</span></div><div class="rounded-xl border border-slate-700 bg-slate-900/70 p-3">UWB<br><span class="text-cyan-300">ON</span></div><div class="rounded-xl border border-slate-700 bg-slate-900/70 p-3">BAT<br><span class="text-white">87%</span></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- FEATURES TAB -->
+    <div id="tab-features" class="tab-pane">
+      <section class="max-w-7xl mx-auto px-5 py-16">
+        <div class="max-w-2xl"><p class="text-xs font-bold uppercase tracking-[.25em] text-cyan-400">Engineered around the credential</p><h2 class="display mt-3 text-4xl font-bold">Everything important, in one device.</h2></div>
+        <div class="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="glass rounded-2xl p-6"><div class="text-2xl">👆</div><h3 class="mt-5 font-bold text-lg">Biometric authentication</h3><p class="mt-2 text-sm leading-6 text-slate-400">Fingerprint and face-authentication interfaces for a layered identity workflow.</p></div>
+          <div class="glass rounded-2xl p-6"><div class="text-2xl">🔐</div><h3 class="mt-5 font-bold text-lg">Secure element</h3><p class="mt-2 text-sm leading-6 text-slate-400">Designed around a dedicated secure element for protected credentials and cryptographic operations.</p></div>
+          <div class="glass rounded-2xl p-6"><div class="text-2xl">📡</div><h3 class="mt-5 font-bold text-lg">NFC + BLE + UWB</h3><p class="mt-2 text-sm leading-6 text-slate-400">Multiple wireless interfaces for proximity, credential presentation and device communication.</p></div>
+          <div class="glass rounded-2xl p-6"><div class="text-2xl">⚡</div><h3 class="mt-5 font-bold text-lg">USB-C + wireless charging</h3><p class="mt-2 text-sm leading-6 text-slate-400">Direct USB-C charging replaces the original dock concept, with wireless charging as a second option.</p></div>
+          <div class="glass rounded-2xl p-6"><div class="text-2xl">💳</div><h3 class="mt-5 font-bold text-lg">Credential vault</h3><p class="mt-2 text-sm leading-6 text-slate-400">Conceptual physical card slot plus digital credentials in a single managed identity surface.</p></div>
+          <div class="glass rounded-2xl p-6"><div class="text-2xl">💧</div><h3 class="mt-5 font-bold text-lg">Rugged enclosure</h3><p class="mt-2 text-sm leading-6 text-slate-400">A sealed enclosure concept designed around an IP68 target and everyday field use.</p></div>
+        </div>
+      </section>
+    </div>
+
+    <!-- SPECS TAB -->
+    <div id="tab-specs" class="tab-pane">
+      <section class="max-w-7xl mx-auto px-5 py-16">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6"><div><p class="text-xs font-bold uppercase tracking-[.25em] text-cyan-400">Technical overview</p><h2 class="display mt-3 text-4xl font-bold">AEGIS ID Ultra specifications</h2></div><span class="text-xs text-slate-500">Prototype / concept specifications</span></div>
+        <div class="mt-10 overflow-hidden rounded-2xl border border-slate-800"><table class="w-full text-sm"><tbody class="divide-y divide-slate-800">
+          <tr><td class="p-4 text-slate-500">Form factor</td><td class="p-4">Badge / card-style enclosure</td></tr>
+          <tr><td class="p-4 text-slate-500">Charging</td><td class="p-4">USB-C direct + wireless charging concept</td></tr>
+          <tr><td class="p-4 text-slate-500">Wireless</td><td class="p-4">NFC, BLE 5.x, UWB concept</td></tr>
+          <tr><td class="p-4 text-slate-500">Security</td><td class="p-4">Dedicated secure-element architecture</td></tr>
+          <tr><td class="p-4 text-slate-500">Power</td><td class="p-4">Rechargeable battery + dedicated charger/PMIC</td></tr>
+          <tr><td class="p-4 text-slate-500">Enclosure</td><td class="p-4">Sealed rugged concept; IP68 is a design target, not a certified rating</td></tr>
+        </tbody></table></div>
+      </section>
+    </div>
+
+    <!-- SECURITY TAB -->
+    <div id="tab-security" class="tab-pane">
+      <section class="max-w-7xl mx-auto px-5 py-16">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <div><p class="text-xs font-bold uppercase tracking-[.25em] text-cyan-400">Security architecture</p><h2 class="display mt-3 text-4xl font-bold">Trust is a system, not a feature.</h2><p class="mt-5 text-slate-400 leading-7">The concept separates identity processing, secure credential storage and radio interfaces into dedicated hardware blocks. The earlier design work specified an STM32MP135-class processor, NXP SE050 secure element, ST25R3916B NFC controller, nRF5340 wireless controller and BQ25619 power-management IC.</p></div>
+          <div class="space-y-3">
+            <div class="glass rounded-xl p-5 flex justify-between"><span>Secure element</span><span class="text-emerald-300">Protected</span></div>
+            <div class="glass rounded-xl p-5 flex justify-between"><span>NFC credential path</span><span class="text-cyan-300">Available</span></div>
+            <div class="glass rounded-xl p-5 flex justify-between"><span>Wireless connectivity</span><span class="text-cyan-300">BLE / UWB</span></div>
+            <div class="glass rounded-xl p-5 flex justify-between"><span>Remote fleet controls</span><span class="text-amber-300">Concept</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- TRACK TAB -->
+    <div id="tab-track" class="tab-pane">
+      <section class="max-w-4xl mx-auto px-5 py-16 text-center">
+        <p class="text-xs font-bold uppercase tracking-[.25em] text-cyan-400">Applicant portal</p><h2 class="display mt-3 text-4xl font-bold">Track your evaluation request</h2><p class="mt-3 text-slate-400">Enter the Request ID from your confirmation and the email used for the application.</p>
+        <form onsubmit="lookupStatus(event)" class="mt-8 grid md:grid-cols-[1fr_1fr_auto] gap-3 text-left">
+          <input id="lookup-id" class="field" placeholder="AEGIS-20260824-XXXXX" required>
+          <input id="lookup-email" type="email" class="field" placeholder="Your email" required>
+          <button class="rounded-xl bg-cyan-400 px-6 py-3 font-bold text-slate-950">Check status</button>
+        </form>
+        <div id="status-result" class="hidden mt-6 text-left glass rounded-2xl p-6"></div>
+      </section>
+    </div>
+
+    <!-- ADMIN TAB -->
+    <div id="tab-admin" class="tab-pane">
+      <section class="max-w-7xl mx-auto px-5 py-16">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-5">
+          <div><p class="text-xs font-bold uppercase tracking-[.25em] text-cyan-400">Operations console</p><h2 class="display mt-3 text-4xl font-bold">Request management</h2><p class="mt-3 text-sm text-slate-500">Secure admin login, shared database, status tracking and notes. <span class="text-cyan-300">This is the admin dashboard.</span></p></div>
+          <div class="flex flex-wrap gap-2">
+            <button id="admin-refresh-btn" onclick="loadRequests()" class="hidden rounded-xl border border-slate-700 px-4 py-2 text-sm font-bold hover:border-cyan-400">Refresh</button>
+            <button id="admin-login-btn" onclick="openModal('admin-modal')" class="rounded-xl bg-cyan-400 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-300">Admin sign in</button>
+            <button id="admin-logout-btn" onclick="adminLogout()" class="hidden rounded-xl border border-red-400/20 px-4 py-2 text-sm font-bold text-red-300">Sign out</button>
+          </div>
+        </div>
+        <div id="admin-gate" class="mt-8 glass rounded-2xl p-8 text-center">
+          <div class="text-3xl">🔒</div><h3 class="mt-3 font-bold text-xl">Admin access required</h3>
+          <p class="mt-2 text-sm text-slate-500">Sign in with an authorized AEGIS ID administrator account to open the private request dashboard.<br><span class="text-cyan-300">8191@gsis.ac.in</span> or <span class="text-cyan-300">8639@gsis.ac.in</span></p>
+          <button onclick="openModal('admin-modal')" class="mt-5 rounded-xl bg-white px-5 py-3 font-bold text-slate-950">Open admin dashboard</button>
+        </div>
+        <div id="admin-panel" class="hidden">
+          <div id="admin-error" class="hidden mt-5 rounded-xl border border-red-400/20 bg-red-400/5 p-4 text-sm text-red-200"></div>
+          <div class="mt-8 grid sm:grid-cols-4 gap-4">
+            <div class="glass rounded-2xl p-5"><p class="text-xs text-slate-500">Requests</p><p id="stat-total" class="mt-2 text-3xl font-bold">0</p></div>
+            <div class="glass rounded-2xl p-5"><p class="text-xs text-slate-500">Units requested</p><p id="stat-units" class="mt-2 text-3xl font-bold">0</p></div>
+            <div class="glass rounded-2xl p-5"><p class="text-xs text-slate-500">Under review</p><p id="stat-review" class="mt-2 text-3xl font-bold text-amber-300">0</p></div>
+            <div class="glass rounded-2xl p-5"><p class="text-xs text-slate-500">Approved</p><p id="stat-approved" class="mt-2 text-3xl font-bold text-emerald-300">0</p></div>
+          </div>
+          <div class="mt-5 glass rounded-2xl overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-slate-900/70 text-slate-500"><tr><th class="p-4 text-left">Request</th><th class="p-4 text-left">Applicant</th><th class="p-4 text-left">Units</th><th class="p-4 text-left">Status</th><th class="p-4 text-left">Action</th></tr></thead><tbody id="request-table" class="divide-y divide-slate-800"></tbody></table></div></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="border-t border-slate-800/70"><div class="max-w-7xl mx-auto px-5 py-10 flex flex-col md:flex-row gap-3 justify-between text-xs text-slate-500"><span>© 2026 AEGIS ID™ Ultra Hardware Platform — concept website</span><span>Prototype claims require engineering validation and certification.</span></div></footer>
+
+  <!-- MODALS -->
+  <div id="eval-modal" class="modal fixed inset-0 z-50 items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="glass w-full max-w-2xl rounded-3xl p-6 md:p-8 relative max-h-[92vh] overflow-auto"><button onclick="closeModal('eval-modal')" class="absolute right-5 top-5 text-slate-500 hover:text-white text-xl">×</button><p class="text-xs font-bold uppercase tracking-[.25em] text-cyan-400">Evaluation program</p><h2 class="display mt-2 text-3xl font-bold">Request an evaluation unit</h2><p class="mt-2 text-sm text-slate-400">Your request will be sent to the configured AEGIS ID evaluation inbox and a confirmation email will be sent to you.</p><form id="eval-form" onsubmit="submitEvalForm(event)" class="mt-7 grid md:grid-cols-2 gap-4"><label class="text-sm">Full name<input id="req-name" required class="field" /></label><label class="text-sm">Email<input id="req-email" required type="email" class="field" /></label><label class="text-sm">Company / school<input id="req-company" required class="field" /></label><label class="text-sm">Units<input id="req-fleet" required type="number" min="1" max="9999" value="1" class="field" /></label><label class="text-sm">Country<input id="req-country" required class="field" /></label><label class="text-sm">Intended use<select id="req-use" class="field"><option>Pilot / evaluation</option><option>Enterprise identity</option><option>Education</option><option>Research</option><option>Other</option></select></label><label class="text-sm md:col-span-2">Message<textarea id="req-message" rows="4" class="field" placeholder="Tell us what you want to evaluate..."></textarea></label><div class="md:col-span-2 flex items-center gap-3"><button id="submit-btn" type="submit" class="flex-1 rounded-xl bg-cyan-400 px-5 py-3 font-bold text-slate-950 hover:bg-cyan-300">Send request</button><button type="button" onclick="closeModal('eval-modal')" class="rounded-xl border border-slate-700 px-5 py-3 font-semibold">Cancel</button></div></form><p id="email-status" class="mt-4 text-xs text-slate-500"></p></div>
+  </div>
+
+  <div id="admin-modal" class="modal fixed inset-0 z-[60] items-center justify-center bg-black/80 backdrop-blur-sm p-4"><div class="glass w-full max-w-md rounded-3xl p-7 relative"><button onclick="closeModal('admin-modal')" class="absolute right-5 top-5 text-slate-500 hover:text-white text-xl">×</button><p class="text-xs font-bold uppercase tracking-[.25em] text-cyan-400">Secure console</p><h2 class="display mt-2 text-2xl font-bold">Admin sign in</h2><p class="mt-2 text-sm text-slate-500">Use the Supabase Auth account configured for the AEGIS ID evaluation inbox.</p><form onsubmit="adminLogin(event)" class="mt-6 space-y-4"><input id="admin-email" type="email" class="field" value="8191@gsis.ac.in" required><input id="admin-password" type="password" class="field" placeholder="Password" required><button class="w-full rounded-xl bg-cyan-400 px-5 py-3 font-bold text-slate-950">Sign in</button></form><p id="admin-login-status" class="mt-4 text-xs text-slate-500"></p></div></div>
+
+  <div id="success-modal" class="modal fixed inset-0 z-[60] items-center justify-center bg-black/80 backdrop-blur-sm p-4"><div class="glass max-w-md rounded-3xl p-8 text-center"><div class="mx-auto h-16 w-16 rounded-full bg-emerald-400/10 border border-emerald-400/30 flex items-center justify-center text-2xl">✓</div><h2 class="display mt-5 text-2xl font-bold">Request received</h2><p class="mt-3 text-sm text-slate-400">Your request has been submitted. Check your inbox for the confirmation email.</p><p id="request-id" class="mt-5 rounded-xl bg-slate-950 p-4 font-mono text-cyan-300"></p><button onclick="closeModal('success-modal')" class="mt-5 w-full rounded-xl bg-white py-3 font-bold text-slate-950">Done</button></div></div>
+
+  <div id="toast" class="toast fixed bottom-6 right-6 z-[70] glass rounded-xl px-4 py-3 text-sm shadow-2xl"></div>
+
+  <script>
+    // ========== GLOBAL TAB SWITCHING FUNCTION ==========
+    function switchTab(tabId) {
+      // Hide all panes
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      // Deactivate all buttons
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active', 'text-cyan-400', 'border-cyan-400');
+        b.classList.add('text-slate-400', 'border-transparent');
+      });
+      // Show selected pane
+      const pane = document.getElementById(tabId);
+      if (pane) pane.classList.add('active');
+      // Activate selected button
+      const btn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+      if (btn) {
+        btn.classList.add('active', 'text-cyan-400', 'border-cyan-400');
+        btn.classList.remove('text-slate-400', 'border-transparent');
+      }
+      // Update hash
+      history.replaceState(null, '', '#' + tabId.replace('tab-', ''));
+    }
+
+    // Initialize tab listeners
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    });
+
+    // Hash support for direct linking
+    function handleHash() {
+      const hash = window.location.hash.replace('#', '');
+      if (!hash) return;
+      const tabId = 'tab-' + hash;
+      if (document.getElementById(tabId)) switchTab(tabId);
+    }
+    window.addEventListener('hashchange', handleHash);
+    // Run on load
+    if (window.location.hash) handleHash();
+
+    // ========== MODAL / TOAST HELPERS ==========
+    function openModal(id){
+      document.getElementById(id)?.classList.add('open');
+      document.body.style.overflow='hidden';
+    }
+    function closeModal(id){
+      document.getElementById(id)?.classList.remove('open');
+      document.body.style.overflow='';
+    }
+    function toast(msg){
+      const t=document.getElementById('toast');
+      t.textContent=msg;
+      t.classList.add('show');
+      setTimeout(()=>t.classList.remove('show'),3500);
+    }
+
+    // ========== APP CONFIG ==========
+    const EMAILJS_PUBLIC_KEY = 'KuXabGd4CBad4J2kx';
+    const EMAILJS_SERVICE_ID = 'service_oa2z1ev';
+    const TEMPLATE_ADMIN = 'template_2m4smsu';
+    const TEMPLATE_APPLICANT = 'template_hjcq99i';
+    const ADMIN_EMAILS = ['8191@gsis.ac.in', '8639@gsis.ac.in'];
+    const ADMIN_EMAIL = ADMIN_EMAILS[0];
+    const isAdminEmail = (email) => ADMIN_EMAILS.includes((email || '').trim().toLowerCase());
+
+    const SUPABASE_URL = 'https://zajgahzibrytrbcrvoka.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InphamdhaHppYnJ5dHJiY3J2b2thIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc1NzY0NzksImV4cCI6MjEwMzE1MjQ3OX0.LvROPvfDDd5M5kg2JQ_idcs9dep25UO0hBsU9OQmUHY';
+
+    const supabaseConfigured =
+      SUPABASE_URL.startsWith('https://') &&
+      !SUPABASE_ANON_KEY.startsWith('YOUR_');
+
+    const supabaseClient = supabaseConfigured
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+      : null;
+
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+    let submissionInProgress = false;
+    const DUPLICATE_WINDOW_MS = 90000;
+
+    function makeId(){
+      return 'AEGIS-'+new Date().toISOString().slice(0,10).replaceAll('-','')+'-'+
+        Math.random().toString(36).slice(2,7).toUpperCase();
+    }
+
+    function submissionFingerprint(data){
+      const raw=[data.from_name,data.reply_to.toLowerCase(),data.company_name,data.fleet_size,data.country,data.intended_use,data.message].join('|').trim();
+      let h=2166136261;
+      for(let i=0;i<raw.length;i++){ h^=raw.charCodeAt(i); h=Math.imul(h,16777619); }
+      return 'aegis_id_submit_'+(h>>>0).toString(16);
+    }
+
+    function esc(s){
+      return String(s??'').replace(/[&<>"']/g,c=>({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+      }[c]));
+    }
+
+    function statusClass(status){
+      const map={
+        'Submitted':'bg-cyan-400/10 text-cyan-300',
+        'Under Review':'bg-amber-400/10 text-amber-300',
+        'Approved':'bg-emerald-400/10 text-emerald-300',
+        'Rejected':'bg-red-400/10 text-red-300',
+        'Fulfilled':'bg-violet-400/10 text-violet-300'
+      };
+      return map[status]||'bg-slate-700 text-slate-300';
+    }
+
+    // ========== EVALUATION FORM SUBMISSION ==========
+    async function submitEvalForm(e){
+      e.preventDefault();
+      if(submissionInProgress) return;
+      submissionInProgress = true;
+
+      const btn=document.getElementById('submit-btn');
+      const old=btn.textContent;
+      btn.disabled=true;
+      btn.textContent='Submitting…';
+      document.getElementById('email-status').textContent='';
+
+      const id=makeId();
+      const data={
+        request_id:id,
+        from_name:document.getElementById('req-name').value.trim(),
+        reply_to:document.getElementById('req-email').value.trim(),
+        company_name:document.getElementById('req-company').value.trim(),
+        fleet_size:document.getElementById('req-fleet').value,
+        country:document.getElementById('req-country').value.trim(),
+        intended_use:document.getElementById('req-use').value,
+        message:document.getElementById('req-message').value.trim(),
+        admin_email:ADMIN_EMAIL,
+        product_name:'AEGIS ID™ Ultra Hardware Platform',
+        status:'Submitted',
+        admin_note:''
+      };
+
+      try{
+        if(!supabaseConfigured) throw new Error('Supabase is not configured.');
+
+        const lockKey=submissionFingerprint(data);
+        const previous=Number(localStorage.getItem(lockKey)||0);
+        if(previous && Date.now()-previous < DUPLICATE_WINDOW_MS){
+          throw new Error('This request was just submitted. Please wait before submitting the same details again.');
+        }
+        localStorage.setItem(lockKey,String(Date.now()));
+
+        const {error:dbError}=await supabaseClient
+          .from('evaluation_requests')
+          .insert({
+            request_id:id,
+            name:data.from_name,
+            email:data.reply_to,
+            company:data.company_name,
+            units:Number(data.fleet_size),
+            country:data.country,
+            intended_use:data.intended_use,
+            message:data.message,
+            status:'Submitted'
+          });
+
+        if(dbError){
+          localStorage.removeItem(lockKey);
+          throw new Error('Database: '+dbError.message);
+        }
+
+        let adminSent=false, applicantSent=false;
+        try{
+          await emailjs.send(EMAILJS_SERVICE_ID,TEMPLATE_ADMIN,data);
+          adminSent=true;
+        }catch(err){
+          console.error('Admin EmailJS:',err);
+        }
+        try{
+          await emailjs.send(EMAILJS_SERVICE_ID,TEMPLATE_APPLICANT,data);
+          applicantSent=true;
+        }catch(err){
+          console.error('Applicant EmailJS:',err);
+        }
+
+        closeModal('eval-modal');
+        document.getElementById('eval-form').reset();
+        document.getElementById('request-id').textContent=id;
+        openModal('success-modal');
+
+        const emailWarning = adminSent && applicantSent
+          ? 'Request saved and both email notifications were sent.'
+          : adminSent
+            ? 'Request saved. Admin notification sent, but applicant confirmation failed.'
+            : applicantSent
+              ? 'Request saved. Applicant confirmation sent, but admin notification failed.'
+              : 'Request saved, but email notifications failed.';
+
+        document.querySelector('#success-modal p.mt-3').textContent=emailWarning;
+        toast(emailWarning);
+      }catch(err){
+        console.error(err);
+        document.getElementById('email-status').textContent='Submission failed: '+(err.message||'Unknown error');
+        toast('Could not save request');
+      }finally{
+        btn.disabled=false;
+        btn.textContent=old;
+        submissionInProgress=false;
+      }
+    }
+
+    // ========== ADMIN AUTH ==========
+    async function adminLogin(e){
+      e.preventDefault();
+      const out=document.getElementById('admin-login-status');
+      out.textContent='';
+
+      if(!supabaseClient){
+        out.textContent='Supabase is not configured.';
+        return;
+      }
+
+      const email=document.getElementById('admin-email').value.trim();
+      const password=document.getElementById('admin-password').value;
+      if(!isAdminEmail(email)){
+        out.textContent='Use an authorized admin email: '+ADMIN_EMAILS.join(' or ');
+        return;
+      }
+
+      out.textContent='Signing in…';
+      const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+      if(error){
+        out.textContent='Login failed: '+error.message;
+        console.error('Admin login:',error);
+        return;
+      }
+
+      if(!data?.session || !isAdminEmail(data.user?.email)){
+        await supabaseClient.auth.signOut();
+        out.textContent='Login succeeded but this account is not authorized as the AEGIS ID administrator.';
+        return;
+      }
+
+      closeModal('admin-modal');
+      toast('Admin signed in');
+      switchTab('tab-admin');
+      await updateAdminUI();
+    }
+
+    async function adminLogout(){
+      if(supabaseClient) await supabaseClient.auth.signOut();
+      toast('Signed out');
+      await updateAdminUI();
+    }
+
+    async function updateAdminUI(){
+      if(!supabaseClient) return;
+
+      const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
+      if(sessionError){
+        console.error('Session:',sessionError);
+        toast('Could not read admin session');
+        return;
+      }
+
+      const logged=!!session && isAdminEmail(session.user?.email);
+      document.getElementById('admin-panel').classList.toggle('hidden',!logged);
+      document.getElementById('admin-gate').classList.toggle('hidden',logged);
+      document.getElementById('admin-login-btn').classList.toggle('hidden',logged);
+      document.getElementById('admin-logout-btn').classList.toggle('hidden',!logged);
+      document.getElementById('admin-refresh-btn').classList.toggle('hidden',!logged);
+
+      if(logged) await loadRequests();
+    }
+
+    async function loadRequests(){
+      if(!supabaseClient) return;
+
+      const {data:{session}}=await supabaseClient.auth.getSession();
+      if(!session || !isAdminEmail(session.user?.email)){
+        toast('Please sign in as the AEGIS ID administrator.');
+        return;
+      }
+
+      const adminErrorBox=document.getElementById('admin-error');
+      adminErrorBox?.classList.add('hidden');
+      const {data,error}=await supabaseClient
+        .from('evaluation_requests')
+        .select('*')
+        .order('created_at',{ascending:false});
+
+      if(error){
+        console.error('Load requests:',error);
+        toast('Dashboard error: '+error.message);
+        const box=document.getElementById('admin-error');
+        if(box){ box.textContent='Dashboard error: '+error.message+' — make sure the Admin Access Fix SQL has been run in Supabase.'; box.classList.remove('hidden'); }
+        document.getElementById('request-table').innerHTML=`<tr><td colspan="5" class="p-8 text-center text-red-300">Could not load requests.</td></tr>`;
+        return;
+      }
+
+      const a=data||[];
+      document.getElementById('stat-total').textContent=a.length;
+      document.getElementById('stat-units').textContent=a.reduce((sum,x)=>sum+Number(x.units||0),0);
+      document.getElementById('stat-review').textContent=a.filter(x=>x.status==='Under Review').length;
+      document.getElementById('stat-approved').textContent=a.filter(x=>x.status==='Approved').length;
+
+      document.getElementById('request-table').innerHTML=a.length
+        ? a.map(x=>`
+          <tr>
+            <td class="p-4 font-mono text-cyan-300">${esc(x.request_id)}<div class="text-xs text-slate-600">${new Date(x.created_at).toLocaleString()}</div></td>
+            <td class="p-4">${esc(x.name)}<div class="text-xs text-slate-500">${esc(x.email)}</div><div class="text-xs text-slate-500">${esc(x.company)}</div></td>
+            <td class="p-4">${x.units}</td>
+            <td class="p-4"><select onchange="updateStatus('${x.id}',this.value)" class="rounded-lg border border-slate-700 bg-slate-950 px-2 py-2 ${statusClass(x.status)}">${['Submitted','Under Review','Approved','Rejected','Fulfilled'].map(v=>`<option ${v===x.status?'selected':''}>${v}</option>`).join('')}</select></td>
+            <td class="p-4"><button onclick="editNote('${x.id}',${JSON.stringify(x.admin_note||'')})" class="rounded-lg border border-slate-700 px-3 py-2 text-xs">Note</button></td>
+          </tr>`).join('')
+        : `<tr><td colspan="5" class="p-8 text-center text-slate-600">No evaluation requests yet.</td></tr>`;
+    }
+
+    async function updateStatus(id,status){
+      if(!supabaseClient) return;
+
+      const {data,error}=await supabaseClient
+        .from('evaluation_requests')
+        .update({status})
+        .eq('id',id)
+        .select('request_id,name,email,company,units,country,intended_use,message,status,admin_note')
+        .single();
+
+      if(error){
+        console.error('Status update:',error);
+        toast('Status update failed: '+error.message);
+        return;
+      }
+
+      try{
+        await emailjs.send(EMAILJS_SERVICE_ID,TEMPLATE_APPLICANT,{
+          request_id:data.request_id,
+          from_name:data.name,
+          reply_to:data.email,
+          company_name:data.company,
+          fleet_size:data.units,
+          country:data.country,
+          intended_use:data.intended_use,
+          message:data.message || '',
+          admin_email:ADMIN_EMAIL,
+          product_name:'AEGIS ID™ Ultra Hardware Platform',
+          status:data.status,
+          admin_note:data.admin_note || ''
+        });
+        toast('Status updated and applicant notified');
+      }catch(err){
+        console.error('Status email:',err);
+        toast('Status updated, but applicant email failed');
+      }
+
+      await loadRequests();
+    }
+
+    async function editNote(id,current){
+      if(!supabaseClient) return;
+
+      const note=prompt('Admin note:',current);
+      if(note===null) return;
+
+      const {error}=await supabaseClient
+        .from('evaluation_requests')
+        .update({admin_note:note})
+        .eq('id',id);
+
+      if(error){
+        console.error('Note update:',error);
+        toast('Note update failed: '+error.message);
+        return;
+      }
+
+      toast('Note saved');
+      await loadRequests();
+    }
+
+    async function lookupStatus(e){
+      e.preventDefault();
+
+      const box=document.getElementById('status-result');
+      box.classList.remove('hidden');
+      box.innerHTML='<p class="text-slate-500">Checking…</p>';
+
+      if(!supabaseConfigured){
+        box.innerHTML='<p class="text-amber-300">Status tracking is not configured.</p>';
+        return;
+      }
+
+      const requestId=document.getElementById('lookup-id').value.trim();
+      const email=document.getElementById('lookup-email').value.trim();
+
+      const {data,error}=await supabaseClient.rpc('lookup_request',{
+        p_request_id:requestId,
+        p_email:email
+      });
+
+      if(error){
+        console.error('Status lookup:',error);
+        box.innerHTML='<p class="text-red-300">Could not check status: '+esc(error.message)+'</p>';
+        return;
+      }
+
+      const r=data?.[0];
+
+      if(!r){
+        box.innerHTML='<p class="text-amber-300">No matching request was found. Check your Request ID and email.</p>';
+        return;
+      }
+
+      box.innerHTML=`
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <p class="font-mono text-cyan-300">${esc(r.request_id)}</p>
+            <p class="mt-1 text-xs text-slate-500">
+              Last updated ${new Date(r.updated_at).toLocaleString()}
+            </p>
+          </div>
+          <span class="rounded-full px-3 py-1 text-sm font-bold ${statusClass(r.status)}">
+            ${esc(r.status)}
+          </span>
+        </div>
+        ${r.admin_note?`
+          <div class="mt-5 rounded-xl bg-slate-950 p-4 text-sm text-slate-400">
+            <b class="text-slate-200">Team note:</b> ${esc(r.admin_note)}
+          </div>`:''}`;
+    }
+
+    // Expose functions used by inline HTML handlers.
+    Object.assign(window,{
+      openModal,closeModal,switchTab,submitEvalForm,adminLogin,adminLogout,
+      updateStatus,editNote,lookupStatus,loadRequests
+    });
+
+    if(supabaseClient){
+      supabaseClient.auth.onAuthStateChange(()=>{
+        setTimeout(()=>updateAdminUI(),0);
+      });
+      updateAdminUI();
+    }
+
+    window.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){
+        closeModal('eval-modal');
+        closeModal('success-modal');
+        closeModal('admin-modal');
+      }
+    });
+  </script>
+</body>
+</html>
