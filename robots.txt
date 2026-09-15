@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://aegisid-five.vercel.app/sitemap.xml
+Sitemap: https://smid.vercel.app/sitemap.xml
